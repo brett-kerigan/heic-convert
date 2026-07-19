@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.superpowers/
+build/
+dist/
+*.egg-info/
+*.heic
+scratch*
+*.zip
+screenshots/

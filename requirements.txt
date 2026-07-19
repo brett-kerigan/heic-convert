@@ -1,0 +1,8 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pillow-heif==0.21.0
+Pillow==11.1.0
+python-multipart==0.0.20
+pywebview==6.2.1 ; sys_platform == "win32"
+httpx==0.28.1
+pytest==8.3.4
