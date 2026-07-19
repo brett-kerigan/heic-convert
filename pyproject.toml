@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "heic-convert"
+version = "0.2.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi==0.115.6",
+    "uvicorn[standard]==0.34.0",
+    "pillow-heif==0.21.0",
+    "Pillow==11.1.0",
+    "python-multipart==0.0.20",
+    "pywebview==6.2.1 ; sys_platform == 'win32'",
+]
+
+[project.scripts]
+heic-convert = "heic_convert.launcher:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "."]
+testpaths = ["tests"]

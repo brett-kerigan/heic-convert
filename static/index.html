@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>HEIC Convert</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23050a05'/%3E%3Ctext x='8' y='13' font-family='monospace' font-size='14' fill='%2338f06e' text-anchor='middle'%3EH%3C/text%3E%3C/svg%3E">
+  <link rel="preload" href="/static/vendor/VT323-Regular.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="/static/vendor/cropper.min.css" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+<main>
+  <div class="crt-screen">
+    <div class="titlebar pywebview-drag-region"><span class="led"></span> HEIC-CONVERT.EXE <span class="win">
+        <button class="wbtn" data-win="min" title="Minimize" aria-label="Minimize">_</button>
+        <button class="wbtn" data-win="max" title="Maximize" aria-label="Maximize">□</button>
+        <button class="wbtn" data-win="close" title="Close" aria-label="Close">×</button>
+      </span></div>
+    <div class="pad">
+      <pre class="banner"> ┓ ┏ ┏┓ ┳ ┏┓   ┏┓ ┏┓ ┏┓ ┓ ┏ ┏┓ ┳┓ ┏┳┓
+ ┣━┫ ┣  ┃ ┃    ┃  ┃┃ ┃┃ ┃┃┃ ┣  ┣┫  ┃
+ ┛ ┗ ┗┛ ┻ ┗┛   ┗┛ ┗┛ ┛┗ ┗┻┛ ┗┛ ┛┗  ┻ </pre>
+      <div class="tag">&gt; HEIC/JPG/PNG/WEBP → PNG/JPG/WEBP · crop · rotate · resize · strip metadata<span class="blink">▋</span></div>
+
+      <section id="dropzone" class="dropzone" tabindex="0" aria-label="Add images">
+        <input id="file-input" type="file" accept=".heic,.heif,.jpg,.jpeg,.png,.webp,.zip" multiple hidden />
+        ＋ DROP FILES OR .ZIP HERE &nbsp; <span class="lbl">[ HEIC · JPG · PNG · WEBP ]</span> &nbsp; or press <span class="badge">[O]</span>
+      </section>
+
+      <section class="panel" id="controls" hidden>
+        <div class="row">
+          <span class="lbl">FORMAT</span>
+          <span class="seg">
+            <button class="seg-btn is-active" data-fmt="png">PNG</button>
+            <button class="seg-btn" data-fmt="jpg">JPG</button>
+            <button class="seg-btn" data-fmt="webp">WEBP</button>
+          </span>
+          <span class="lbl">RESIZE</span>
+          <span class="seg" id="resize-group">
+            <button class="chip on" data-resize="0">Off</button>
+            <button class="chip" data-resize="1024">1024</button>
+            <button class="chip" data-resize="2048">2048</button>
+            <button class="chip" data-resize="4096">4096</button>
+          </span>
+        </div>
+        <div class="row" id="quality-wrap" hidden>
+          <span class="lbl">QUALITY</span>
+          <input id="quality" type="range" min="50" max="100" value="95" />
+          <output id="quality-val">95</output>
+        </div>
+      </section>
+
+      <div class="row" id="actions" hidden>
+        <button id="convert-btn" class="btn solid" disabled>▶ CONVERT</button>
+        <button id="rotate-all-btn" class="btn">⟳ Rotate selected</button>
+        <button id="scrub-btn" class="btn">⌫ Scrub (keep format)</button>
+        <button id="clear-btn" class="btn ghost">✕ Clear all</button>
+        <span class="lbl" id="count"></span>
+        <button id="select-toggle" class="btn ghost">Select none</button>
+      </div>
+
+      <p id="io-hint" class="lbl io-hint" hidden>Convert → your chosen format &nbsp;·&nbsp; Scrub → same format, metadata removed</p>
+
+      <section class="progress" id="progress" hidden>
+        <div class="lbl" id="progress-label">CONVERTING</div>
+        <div class="bar" id="progress-bar"></div>
+      </section>
+
+      <p id="status" class="lbl" role="status" aria-live="polite"></p>
+
+      <section id="gallery" class="gallery"></section>
+    </div>
+    <div class="statusbar"><span>● OFFLINE</span><span>nothing leaves this machine</span><span style="margin-left:auto">v1.0</span></div>
+  </div>
+</main>
+
+<div id="crop-modal" class="modal" hidden role="dialog" aria-modal="true" aria-label="Crop image">
+  <div class="modal-card">
+    <div class="modal-head">┤ CROP ├ <span id="crop-name" style="margin-left:8px"></span><span class="lbl" style="margin-left:auto">esc to close</span></div>
+    <div class="crop-stage"><img id="crop-img" alt="Crop preview" /></div>
+    <div class="crop-tools">
+      <div class="row" style="gap:6px">
+        <span class="lbl">ASPECT</span>
+        <button class="chip on" data-aspect="free">Free</button>
+        <button class="chip" data-aspect="orig">Orig</button>
+        <button class="chip" data-aspect="1">1:1</button>
+        <button class="chip" data-aspect="1.3333">4:3</button>
+        <button class="chip" data-aspect="1.5">3:2</button>
+        <button class="chip" data-aspect="1.7778">16:9</button>
+      </div>
+      <div class="row" style="gap:6px">
+        <button id="crop-clear" class="chip">Clear</button>
+        <button id="crop-cancel" class="chip">Cancel</button>
+        <button id="crop-apply" class="chip on">Apply ↵</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="preview-modal" class="modal" hidden role="dialog" aria-modal="true" aria-label="Preview image">
+  <div class="modal-card">
+    <div class="modal-head">┤ PREVIEW ├ <span id="preview-name" style="margin-left:8px"></span><span class="lbl" style="margin-left:auto">esc to close</span></div>
+    <div class="preview-stage"><img id="preview-img" alt="Image preview" /></div>
+    <div class="crop-tools">
+      <div class="row" style="gap:6px">
+        <button id="preview-crop" class="chip">✂ Crop</button>
+        <button id="preview-rotate" class="chip">⟳ Rotate</button>
+        <button id="preview-flip" class="chip">⇋ Flip</button>
+      </div>
+      <div class="row" style="gap:6px">
+        <button id="preview-close" class="chip on">✕ Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/static/vendor/cropper.min.js"></script>
+<script src="/static/vendor/jszip.min.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

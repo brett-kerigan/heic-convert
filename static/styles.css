@@ -1,0 +1,103 @@
+:root{
+  --scr:#050a05; --grn:#38f06e; --grn-hi:#8dffb0; --grn-dim:#1c6f38;
+  --grn-line:#2c8f4c; --amber:#ffd24a; --radius:8px;
+}
+*{box-sizing:border-box}
+@font-face{font-family:"DOS";src:url("/static/vendor/VT323-Regular.ttf") format("truetype");font-display:block}
+[hidden]{display:none !important}
+html,body{margin:0;background:#000;color:var(--grn)}
+body{font:20px/1.4 "DOS",ui-monospace,"Cascadia Mono","Consolas",monospace;
+  height:100vh;padding:14px;display:flex;justify-content:center;overflow:hidden;
+  text-shadow:0 0 5px rgba(56,240,110,.4)}
+main{width:100%;max-width:2000px;height:100%}
+
+/* monitor */
+.crt-screen{position:relative;background:var(--scr);border-radius:12px;overflow:hidden;
+  box-shadow:0 0 0 2px #0c1a0c,0 0 44px rgba(56,240,110,.14);
+  height:100%;display:flex;flex-direction:column}
+.crt-screen::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:9;
+  background:repeating-linear-gradient(rgba(0,0,0,0) 0 2px,rgba(0,0,0,.20) 2px 4px),
+  radial-gradient(120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.55) 100%)}
+.titlebar{display:flex;align-items:center;gap:8px;padding:6px 12px;background:#0a170c;
+  border-bottom:1px solid var(--grn-line);color:var(--grn-hi);font-size:16px}
+.led{width:8px;height:8px;border-radius:50%;background:var(--grn);box-shadow:0 0 8px var(--grn)}
+.titlebar .win{margin-left:auto;letter-spacing:2px;color:var(--grn-dim);display:inline-flex;gap:2px;align-items:center}
+.wbtn{background:transparent;border:0;color:var(--grn-dim);font:inherit;line-height:1;
+  padding:0 7px;cursor:pointer}
+.wbtn:hover{color:var(--grn-hi)}
+.wbtn[data-win="close"]:hover{color:#ff6b6b}
+.pad{padding:14px 20px;flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+/* wide desktop layout: everything fixed except the gallery, which scrolls internally */
+.titlebar,.banner,.tag,.dropzone,#controls,#actions,#io-hint,#progress,#status,.statusbar{flex:none}
+#actions{margin-bottom:2px}
+.io-hint{font-size:14px;margin:0 0 8px}
+.banner{color:var(--grn-hi);white-space:pre;line-height:1.02;font-size:16px}
+.tag{color:var(--grn-dim);margin:2px 0 14px}
+.blink{animation:cb 1.05s steps(1) infinite}@keyframes cb{50%{opacity:0}}
+
+/* intake + panels */
+.dropzone{border:1px dashed var(--grn);text-align:center;padding:10px 20px;color:var(--grn-hi);
+  cursor:pointer;margin-bottom:10px;outline:none}
+.dropzone.drag,.dropzone:focus-visible{background:#0a1f0f;border-color:var(--grn-hi)}
+.panel{border:1px solid var(--grn-line);padding:12px 14px;margin-bottom:14px}
+.row{display:flex;gap:20px;flex-wrap:wrap;align-items:center}.row+.row{margin-top:9px}
+.lbl{color:var(--grn-dim)}
+
+/* segmented + chips */
+.seg{display:inline-flex}.seg-btn{background:transparent;border:0;color:var(--grn-dim);
+  font:inherit;padding:1px 10px;cursor:pointer}
+.seg-btn.is-active{background:var(--grn);color:var(--scr);text-shadow:none}
+.chip{border:1px solid var(--grn-line);padding:1px 9px;color:var(--grn-dim);cursor:pointer;background:transparent;font:inherit}
+.chip.on{border-color:var(--grn);color:var(--grn)}
+input[type=range]{accent-color:var(--grn);vertical-align:middle}
+
+/* gallery */
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;
+  margin-top:4px;flex:1 1 auto;min-height:0;overflow-y:auto;align-content:start;padding-right:6px}
+.card{border:1px solid var(--grn-line);padding:7px;font-size:15px;position:relative}
+.card .ph{height:150px;margin-bottom:6px;border:1px solid var(--grn-dim);background:#000;
+  display:grid;place-items:center;overflow:hidden;cursor:pointer}
+.card .ph img{max-width:100%;max-height:150px;object-fit:contain;display:block}
+.card .nm{color:var(--grn-hi);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card .dim{color:var(--grn-dim);font-size:13px}
+.card .badge{color:var(--amber);text-shadow:0 0 5px rgba(255,210,74,.5);font-size:13px}
+.card .err{color:#ff6b6b;font-size:13px}
+.card .acts{margin-top:6px;display:flex;gap:8px;color:var(--grn-dim)}
+.card .acts button{background:none;border:0;color:var(--grn);font:inherit;cursor:pointer;padding:0}
+.card .acts button:hover{color:var(--grn-hi)}
+
+/* inclusive selection: OK cards dim when excluded, glow when selected */
+.card.ok:not(.selected){opacity:.5}
+.card.ok.selected{border-color:var(--grn);box-shadow:0 0 0 1px var(--grn),0 0 12px rgba(56,240,110,.18)}
+.card .sel{position:absolute;top:6px;left:6px;width:20px;height:20px;z-index:2;
+  border:1px solid var(--grn-line);border-radius:3px;background:rgba(5,10,5,.8);
+  color:var(--grn-dim);font:inherit;font-size:13px;line-height:18px;text-align:center;
+  padding:0;cursor:pointer}
+.card .sel:hover{color:var(--grn-hi)}
+.card.selected .sel{border-color:var(--grn);color:var(--grn);text-shadow:0 0 5px rgba(56,240,110,.5)}
+
+/* progress */
+.progress{border:1px solid var(--grn-line);padding:12px 14px;margin-bottom:14px}
+.bar{letter-spacing:1px}.bar-fill{color:var(--grn)}.bar-empty{color:var(--grn-dim)}
+
+/* buttons + statusbar */
+.btn{background:transparent;border:1px solid var(--grn);color:var(--grn-hi);font:inherit;
+  padding:4px 16px;cursor:pointer}
+.btn.solid{background:var(--grn);color:var(--scr);text-shadow:none}
+.btn.ghost{border-color:var(--grn-dim);color:var(--grn-dim)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.statusbar{border-top:1px solid var(--grn-line);padding:6px 14px;color:var(--grn-dim);
+  font-size:14px;display:flex;gap:16px}
+
+/* crop modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:grid;place-items:center;padding:16px;z-index:50}
+.modal-card{background:var(--scr);border:1px solid var(--grn);width:min(900px,96vw);overflow:hidden;
+  box-shadow:0 0 44px rgba(56,240,110,.2)}
+.modal-head{background:#0a170c;border-bottom:1px solid var(--grn-line);padding:5px 12px;color:var(--grn-hi);display:flex}
+.crop-stage{background:#000;max-height:66vh}.crop-stage img{display:block;max-width:100%}
+.crop-tools{padding:10px 12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+/* preview modal */
+.preview-stage{background:#000;max-height:72vh;display:grid;place-items:center;overflow:hidden}
+#preview-img{max-height:72vh;max-width:100%;object-fit:contain;display:block}
+@media (max-width:560px){.row{gap:12px}}

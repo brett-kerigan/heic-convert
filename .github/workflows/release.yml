@@ -1,0 +1,66 @@
+name: release
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build-windows-exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+      - name: Test
+        run: pytest -q
+      - name: Build exe
+        run: |
+          python packaging/make_icon.py
+          pyinstaller --clean --noconfirm packaging/heic-convert.spec
+      - name: Smoke test
+        env:
+          HEIC_CONVERT_NO_WINDOW: "1"
+        run: |
+          $stdout = "smoke.stdout.log"
+          $stderr = "smoke.stderr.log"
+          $proc = Start-Process -FilePath dist/heic-convert.exe -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
+          try {
+            $served = $false
+            for ($i = 1; $i -le 60; $i++) {
+              try {
+                $response = Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8092/
+                if ($response.StatusCode -eq 200) {
+                  $served = $true
+                  break
+                }
+              } catch {
+                Start-Sleep -Seconds 1
+              }
+            }
+
+            if (-not $served) {
+              $exit = if ($proc.HasExited) { "tracked process exit code $($proc.ExitCode)" } else { "tracked process still running" }
+              throw "exe did not serve http://127.0.0.1:8092/ within 60 seconds ($exit)"
+            }
+          } finally {
+            Stop-Process -Name heic-convert -Force -ErrorAction SilentlyContinue
+            if (Test-Path $stdout) { Get-Content $stdout }
+            if (Test-Path $stderr) { Get-Content $stderr }
+          }
+        shell: pwsh
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/heic-convert.exe
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: heic-convert-exe
+          path: dist/heic-convert.exe

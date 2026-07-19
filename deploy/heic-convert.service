@@ -1,0 +1,14 @@
+[Unit]
+Description=heic-convert web app
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=YOUR_USER
+WorkingDirectory=/opt/heic-convert
+ExecStart=/opt/heic-convert/.venv/bin/heic-convert
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
